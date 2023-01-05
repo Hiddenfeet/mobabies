@@ -1,27 +1,21 @@
 # Crosmo Baby NFT Minting dApp 
 
-This a complete example of fullstack NFT minting dApp. **BoredApe** is built with the purpose of providing an _entry point for future NFT Minting Website_ projects.
-
-To see the demo check this link:
-
-[![vercel](https://img.shields.io/badge/vercel-5624d0?style=for-the-badge&logo=vercel&logoColor=white)](https://boredape-minting-dapp.vercel.app/)
+This a complete example of fullstack NFT minting dApp. **CrosmoBaby** is built with the purpose of providing an _entry point for future NFT Minting Website_ projects.
 
 
-To better understand take my course:
 
-[![udemy](https://img.shields.io/badge/udemy-5624d0?style=for-the-badge&logo=udemy&logoColor=white)](https://www.udemy.com/course/the-fullstack-nft-minting-website-course/?referralCode=5C50F6A55E29FC7E0107)
 
 ## Installation
 
-You can use **the default BoredApe smart contract** and play with it or you can also put **your own smart contract** and make changes as needed. Remember to change `.env` file with your own variables.
+You can use **the default CrosmoBaby smart contract** and play with it or you can also put **your own smart contract** and make changes as needed. Remember to change `.env` file with your own variables.
 
-Use the default **BoredApe Smart Contract:**
+Use the default **CrosmoBaby Smart Contract:**
 
 ```bash
 
   # Clone the repository and change directory into it
-  git clone https://github.com/codingwithdidem/boredape-minting-dapp.git
-  cd boredape-nft-minting-dapp
+  git clone https://github.com/codingwithdidem/CrosmoBaby-minting-dapp.git
+  cd CrosmoBaby-nft-minting-dapp
 
   npm install            # Download packages
   npm run dev            # Run the dev server
@@ -31,7 +25,7 @@ Use the default **BoredApe Smart Contract:**
 
 First of all change .env variables with yours. And update the `dapp.config.js` file according to your needs.
 
-If you want to make changes on BoredApe smart contract, you can find BoredApe.sol inside `/contracts`folder. After making changes you need to recompile your smart contract using `npx hardhat compile` command. It will recompile the smart contract and create & update `/artifacts` folder. Smart contract ABI is also in this folder.
+If you want to make changes on CrosmoBaby smart contract, you can find CrosmoBaby.sol inside `/contracts`folder. After making changes you need to recompile your smart contract using `npx hardhat compile` command. It will recompile the smart contract and create & update `/artifacts` folder. Smart contract ABI is also in this folder.
 
 After making changes you need to update the `scripts/whitelist.js` with your whitelisted users accounts and deploy & verify your smart contract on ethereum blockchain. Use the scripts I created for you
 to do that. You can find the _deploy_ & _verify_ scripts inside `/scripts`folder.
