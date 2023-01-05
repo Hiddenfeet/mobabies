@@ -45,9 +45,9 @@ const initOnboard = init({
     // }
   ],
   appMetadata: {
-    name: 'BoredApes',
+    name: 'CrosmoBabies',
     icon: ApeIcon,
-    description: 'We are some bored apes',
+    description: 'We are some crosmo babies',
     recommendedInjectedWallets: [
       { name: 'MetaMask', url: 'https://metamask.io' },
       { name: 'Coinbase', url: 'https://wallet.coinbase.com/' }

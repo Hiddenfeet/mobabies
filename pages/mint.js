@@ -164,7 +164,7 @@ export default function Mint() {
                 </div>
 
                 <img
-                  src="/images/13.png"
+                  src="/images/crosmo-babies.gif"
                   className="object-cover w-full sm:h-[280px] md:w-[250px] rounded-md"
                 />
               </div>

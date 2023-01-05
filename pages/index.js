@@ -19,9 +19,9 @@ export default function Home() {
           <Link href="#">
             <a className="font-coiny text-xl md:text-3xl font-bold">
               <span className="bg-gradient-to-br from-brand-blue to-brand-purple pr-2 bg-clip-text text-transparent ">
-                Bored
+                Crosmo
               </span>
-              Ape
+              Baby
             </a>
           </Link>
 
@@ -44,9 +44,9 @@ export default function Home() {
                 </a>
               </li>
 
-              <li className="cursor-pointer">
+              <li className="cursor-pointer"> 
                 <a
-                  href="https://twitter.com/DidemKkkaraasl1"
+                  href="https://t.co/hne0N4SxCH"
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -65,7 +65,7 @@ export default function Home() {
 
               <li className="cursor-pointer">
                 <a
-                  href="https://discord.gg/rAFdkCwn"
+                  href="https://discord.gg/WgeyMCKM"
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -111,23 +111,20 @@ export default function Home() {
           <div className="flex flex-col md:flex-row md:space-x-16 space-y-10 items-center mt-20 w-full">
             {/* BoredApe Image */}
             <img
-              src="/images/9.png"
+              src="/images/crosmo-babies.gif"
               className="w-64 h-64 rounded-md object-cover"
             />
 
             <div className="flex flex-col md:items-start items-center justify-center text-center font-coiny text-gray-800 px-4 md:px-0 py-10 mt-14">
               <h2 className="font-bold text-2xl md:text-4xl uppercase">
-                About BoredApes
+                About CROSMOBABIES
               </h2>
 
               <p className="mt-6 text-lg">
-                {`BoredApes are a collection of 5,555 burning hot NFTs living in
-                the core of the blockchain. Each individual BoredApes is
-                carefully curated from over 150 traits, along with some
-                incredibly rare 1/1s that have traits that can't be found from
-                any other BoredApes. Our vision is to create an amazing project
+                {`CrosmoBabies are a collection of 500 burning hot NFTs living in
+                the core of the blockchain. Our vision is to create an amazing project
                 that will shed light, joy, love, and creativity! Burn on,
-                BoredApes!`}
+                CrosmoBabies!`}
               </p>
             </div>
           </div>

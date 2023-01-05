@@ -17,12 +17,17 @@ module.exports = {
       }
     }
   },
-  defaultNetwork: 'rinkeby',
+  defaultNetwork: 'cronosTest',
   networks: {
     hardhat: {},
     rinkeby: {
       url: `${process.env.NEXT_PUBLIC_ALCHEMY_RPC_URL}`,
       accounts: [`0x${process.env.METAMASK_PRIVATE_KEY}`]
+    },
+    cronosTest: {
+      url: "https://evm-t3.cronos.org",
+      accounts: [process.env.METAMASK_PRIVATE_KEY || ""],
+      chainId: 338
     }
   },
   paths: {

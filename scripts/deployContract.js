@@ -14,21 +14,19 @@ const proxyRegistryAddressMainnet = '0xa5409ec958c83c3f309868babaca7c86dcb077c1'
 
 async function main() {
   // Calculate merkle root from the whitelist array
-  const leafNodes = whitelist.map((addr) => keccak256(addr))
-  const merkleTree = new MerkleTree(leafNodes, keccak256, { sortPairs: true })
-  const root = merkleTree.getRoot()
+  // const leafNodes = whitelist.map((addr) => keccak256(addr))
+  // const merkleTree = new MerkleTree(leafNodes, keccak256, { sortPairs: true })
+  // const root = merkleTree.getRoot()
 
   // Deploy the contract
-  const BoredApes = await hre.ethers.getContractFactory('BoredApe')
-  const boredApes = await BoredApes.deploy(
-    BASE_URI,
-    root,
-    proxyRegistryAddressRinkeby
+  const CrosmoBaby = await hre.ethers.getContractFactory('CrosmoBaby')
+  const crosmoBaby = await CrosmoBaby.deploy(
+    BASE_URI
   )
 
-  await boredApes.deployed()
+  await crosmoBaby.deployed()
 
-  console.log('BoredApes deployed to:', boredApes.address)
+  console.log('CrosmoBaby deployed to:', crosmoBaby.address)
 }
 
 // We recommend this pattern to be able to use async/await everywhere

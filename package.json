@@ -1,5 +1,5 @@
 {
-  "name": "boredape-nft-minting-dapp",
+  "name": "crosmobaby-nft-minting-dapp",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -23,13 +23,15 @@
     "chai": "^4.3.6",
     "dotenv": "^16.0.0",
     "ethereum-waffle": "^3.4.0",
-    "ethers": "^5.5.4",
+    "ethers": "^5.7.2",
     "hardhat": "^2.8.4",
     "keccak256": "^1.0.6",
     "merkletreejs": "^0.2.30",
     "next": "12.1.0",
     "react": "17.0.2",
-    "react-dom": "17.0.2"
+    "react-dom": "17.0.2",
+    "web3": "^1.8.1",
+    "web3-eth-contract": "^1.8.1"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.2",

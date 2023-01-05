@@ -1,18 +1,10 @@
-const { createAlchemyWeb3 } = require('@alch/alchemy-web3')
-const { MerkleTree } = require('merkletreejs')
-const keccak256 = require('keccak256')
-const whitelist = require('../scripts/whitelist.js')
+const Web3 = require('web3')
 
-const web3 = createAlchemyWeb3(process.env.NEXT_PUBLIC_ALCHEMY_RPC_URL)
+const web3 = new Web3(Web3.givenProvider)
 import { config } from '../dapp.config'
 
-const contract = require('../artifacts/contracts/BoredApe.sol/BoredApe.json')
+const contract = require('../artifacts/contracts/CrosmoBaby.sol/CrosmoBaby.json')
 const nftContract = new web3.eth.Contract(contract.abi, config.contractAddress)
-
-// Calculate merkle root from the whitelist array
-const leafNodes = whitelist.map((addr) => keccak256(addr))
-const merkleTree = new MerkleTree(leafNodes, keccak256, { sortPairs: true })
-const root = merkleTree.getRoot()
 
 export const getTotalMinted = async () => {
   const totalMinted = await nftContract.methods.totalSupply().call()
@@ -52,18 +44,7 @@ export const presaleMint = async (mintAmount) => {
     }
   }
 
-  const leaf = keccak256(window.ethereum.selectedAddress)
-  const proof = merkleTree.getHexProof(leaf)
 
-  // Verify Merkle Proof
-  const isValid = merkleTree.verify(proof, leaf, root)
-
-  if (!isValid) {
-    return {
-      success: false,
-      status: 'Invalid Merkle Proof - You are not on the whitelist'
-    }
-  }
 
   const nonce = await web3.eth.getTransactionCount(
     window.ethereum.selectedAddress,
