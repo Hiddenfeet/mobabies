@@ -3,37 +3,47 @@ const Web3 = require('web3')
 const web3 = new Web3(Web3.givenProvider)
 import { config } from '../dapp.config'
 
-const contract = require('../artifacts/contracts/CrosmoBaby.sol/CrosmoBaby.json')
+const contract = require('../artifacts/contracts/CrosmoBaby.sol/AlienCrosmobaby.json')
 const nftContract = new web3.eth.Contract(contract.abi, config.contractAddress)
 
 export const getTotalMinted = async () => {
-  const totalMinted = await nftContract.methods.totalSupply().call()
-  return totalMinted
+  return await nftContract.methods.totalSupply().call()
 }
 
 export const getMaxSupply = async () => {
-  const maxSupply = await nftContract.methods.maxSupply().call()
-  return maxSupply
+  return await nftContract.methods.maxSupply().call()
+}
+
+export const getBalance = async (wallet) => {
+  return Number(await nftContract.methods.balanceOf(wallet).call())
 }
 
 export const isPausedState = async () => {
-  const paused = await nftContract.methods.paused().call()
-  return paused
+  return await nftContract.methods.paused().call()
 }
 
-export const isPublicSaleState = async () => {
-  const publicSale = await nftContract.methods.publicM().call()
-  return publicSale
+export const isCrosmocraft = async (wallet) => {
+  return await nftContract.methods.isCrosmocraft(wallet).call()
 }
 
-export const isPreSaleState = async () => {
-  const preSale = await nftContract.methods.presaleM().call()
-  return preSale
+export const isCrosmonaut = async (wallet) => {
+  return await nftContract.methods.isCrosmonaut(wallet).call()
+}
+
+export const getSaleState = async () => {
+  return Number(await nftContract.methods.saleState().call())
+}
+
+export const getMintPrice = async (wallet) => {
+  return await nftContract.methods.mintCost(wallet).call()
 }
 
 export const getPrice = async () => {
-  const price = await nftContract.methods.price().call()
-  return price
+  return await nftContract.methods.price().call()
+}
+
+export const getWalletBalance = async (wallet) => {
+  return await web3.eth.getBalance(wallet)
 }
 
 export const presaleMint = async (mintAmount) => {
@@ -87,7 +97,7 @@ export const presaleMint = async (mintAmount) => {
   }
 }
 
-export const publicMint = async (mintAmount) => {
+export const publicMint = async (mintAmount,totalPrice) => {
   if (!window.ethereum.selectedAddress) {
     return {
       success: false,
@@ -104,10 +114,8 @@ export const publicMint = async (mintAmount) => {
   const tx = {
     to: config.contractAddress,
     from: window.ethereum.selectedAddress,
-    value: parseInt(
-      web3.utils.toWei(String(config.price * mintAmount), 'ether')
-    ).toString(16), // hex
-    data: nftContract.methods.publicSaleMint(mintAmount).encodeABI(),
+    value: totalPrice, // hex
+    data: nftContract.methods.mint(mintAmount).encodeABI(),
     nonce: nonce.toString(16)
   }
 

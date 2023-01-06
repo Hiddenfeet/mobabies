@@ -19,9 +19,11 @@ async function main() {
   // const root = merkleTree.getRoot()
 
   // Deploy the contract
-  const CrosmoBaby = await hre.ethers.getContractFactory('CrosmoBaby')
+  const CrosmoBaby = await hre.ethers.getContractFactory('AlienCrosmobaby')
   const crosmoBaby = await CrosmoBaby.deploy(
-    BASE_URI
+    BASE_URI,
+    "0x7C0132b3D1a5999C66F0f36Ed53f8930D481cF93",
+    "0xDD99b5A1d868Ba7641Ab8D13B06b2E78826a1579"
   )
 
   await crosmoBaby.deployed()

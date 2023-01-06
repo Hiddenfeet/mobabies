@@ -65,9 +65,3 @@ To do that;
 **Client:** React, TailwindCSS, web3.js
 
 **Server:** Alchemy, NextJS, Hardhat
-
-## Support
-
-For support, email codingwithdidem@gmail.com
-
-[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/codewithdidem)
