@@ -4,7 +4,7 @@ import walletConnectModule from '@web3-onboard/walletconnect'
 import coinbaseModule from '@web3-onboard/coinbase'
 import fortmaticModule from '@web3-onboard/fortmatic'
 
-import ApeIcon from '../Ape'
+import CrosmoIcon from '../Crosmo'
 
 const RPC_URL = process.env.NEXT_PUBLIC_ALCHEMY_RPC_URL
 
@@ -46,8 +46,8 @@ const initOnboard = init({
   ],
   appMetadata: {
     name: 'CrosmoBabies',
-    icon: ApeIcon,
-    description: 'We are some crosmo babies',
+    icon: CrosmoIcon,
+    description: 'We are some Crosmo Naut.',
     recommendedInjectedWallets: [
       { name: 'MetaMask', url: 'https://metamask.io' },
       { name: 'Coinbase', url: 'https://wallet.coinbase.com/' }
@@ -57,8 +57,6 @@ const initOnboard = init({
       termsUrl: 'https://www.blocknative.com/terms-conditions',
       privacyUrl: 'https://www.blocknative.com/privacy-policy'
     },
-    gettingStartedGuide: 'https://blocknative.com',
-    explore: 'https://blocknative.com'
   }
 })
 
