@@ -33,6 +33,7 @@ export default function Mint() {
   const [hasCrosmonaut, setHasCrosmonaut] = useState(false)
   const [mintPrice, setMintPrice] = useState('0')
   const [totalPrice, setTotalPrice] = useState('0')
+  const [useHigherGas, setUseHigherGas] = useState(false)
 
   const [status, setStatus] = useState(null)
   const [mintAmount, setMintAmount] = useState(1)
@@ -197,13 +198,14 @@ export default function Mint() {
     }
     
     const walletBlnc = await getWalletBalance(wallet.accounts[0].address)
+    console.log({walletBlnc,totalPrice,mintAmount})
     if (new Big(walletBlnc).lt(new Big(totalPrice))) {
       return setStatus({
         success: false,
         message: 'Insufficient fund'
       })
     }
-    const { success, status } = await publicMint(mintAmount,totalPrice)
+    const { success, status } = await publicMint(mintAmount,totalPrice, useHigherGas)
 
     setStatus({
       success,
@@ -263,6 +265,30 @@ export default function Mint() {
 
               <div className="flex flex-col items-center w-full px-4 mt-16 md:mt-0">
                 <div className="font-coiny flex items-center justify-between w-full">
+                <button
+                    className="w-14 h-10 md:w-16 md:h-12 flex items-center justify-center text-brand-background hover:shadow-lg bg-gray-300 font-bold rounded-md"
+                    onClick={() => decrementMintAmount()}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-6 w-6 md:h-8 md:w-8"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M18 12H6"
+                      />
+                    </svg>
+                  </button>
+
+                  <p className="flex items-center justify-center flex-1 grow text-center font-bold text-brand-pink text-3xl md:text-4xl">
+                    {mintAmount}
+                  </p>
+
                   <button
                     className="w-14 h-10 md:w-16 md:h-12 flex items-center justify-center text-brand-background hover:shadow-lg bg-gray-300 font-bold rounded-md"
                     onClick={() => incrementMintAmount()}
@@ -279,30 +305,6 @@ export default function Mint() {
                         strokeLinejoin="round"
                         strokeWidth={2}
                         d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                      />
-                    </svg>
-                  </button>
-
-                  <p className="flex items-center justify-center flex-1 grow text-center font-bold text-brand-pink text-3xl md:text-4xl">
-                    {mintAmount}
-                  </p>
-
-                  <button
-                    className="w-14 h-10 md:w-16 md:h-12 flex items-center justify-center text-brand-background hover:shadow-lg bg-gray-300 font-bold rounded-md"
-                    onClick={() => decrementMintAmount()}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-6 w-6 md:h-8 md:w-8"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M18 12H6"
                       />
                     </svg>
                   </button>
@@ -347,6 +349,18 @@ export default function Mint() {
                     Connect Wallet
                   </button>
                 )}
+                <div className="mt-3">
+                <input
+                  className="text-sm text-pink-200 tracking-widest mt-3 mr-1"
+                  type="checkbox"
+                  id="mdcHigherGas"
+                  value="Use higher gas to reduce mint failure chance"
+                  text="Use higher gas to reduce mint failure chance"
+                  checked={useHigherGas}
+                  onChange={(e) => setUseHigherGas(e.target.checked)}
+                />
+                <label className='text-pink-200'>Use higher gas to reduce mint failure chance</label>
+                </div>
               </div>
             </div>
 
@@ -369,7 +383,7 @@ export default function Mint() {
                 Contract Address
               </h3>
               <a
-                href={`https://rinkeby.etherscan.io/address/${config.contractAddress}#readContract`}
+                href={`https://cronoscan.com/address/${config.contractAddress}#readContract`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-400 mt-4"
@@ -381,7 +395,6 @@ export default function Mint() {
               </div>
               <div className='flex flex-row mt-4 gap-4'>
                 <img src='/images/etherscan.png' width={40} height={40}/>
-                <img src='/images/opensea.svg' width={40} height={40}/>
                 <img src='/images/discord.png' width={40} height={40}/>
                 <img src='/images/twitter.png' width={40} height={40}/>
               </div>

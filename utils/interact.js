@@ -1,4 +1,5 @@
 const Web3 = require('web3')
+const Big = require('bignumber.js')
 
 const web3 = new Web3(Web3.givenProvider)
 import { config } from '../dapp.config'
@@ -83,9 +84,9 @@ export const presaleMint = async (mintAmount) => {
     return {
       success: true,
       status: (
-        <a href={`https://rinkeby.etherscan.io/tx/${txHash}`} target="_blank">
+        <a href={`https://cronoscan.com/tx/${txHash}`} target="_blank">
           <p>✅ Check out your transaction on Etherscan:</p>
-          <p>{`https://rinkeby.etherscan.io/tx/${txHash}`}</p>
+          <p>{`https://cronoscan.com/tx/${txHash}`}</p>
         </a>
       )
     }
@@ -97,7 +98,7 @@ export const presaleMint = async (mintAmount) => {
   }
 }
 
-export const publicMint = async (mintAmount,totalPrice) => {
+export const publicMint = async (mintAmount, totalPrice, useHigherGas) => {
   if (!window.ethereum.selectedAddress) {
     return {
       success: false,
@@ -111,13 +112,20 @@ export const publicMint = async (mintAmount,totalPrice) => {
   )
 
   // Set up our Ethereum transaction
-  const tx = {
+  let tx = {
     to: config.contractAddress,
     from: window.ethereum.selectedAddress,
-    value: totalPrice, // hex
+    value: '0x' + new Big(totalPrice).toString(16), // hex
     data: nftContract.methods.mint(mintAmount).encodeABI(),
     nonce: nonce.toString(16)
   }
+
+  console.log(tx)
+
+  const gas = await nftContract.methods.mint(mintAmount).estimateGas(tx)
+  const gasPrice = await web3.eth.getGasPrice()
+  console.log({gas,gasPrice})
+  tx = {...tx, gas: web3.utils.toHex(Math.ceil(gas * (useHigherGas ? 1.5 : 1.2))), gasPrice: web3.utils.toHex(Math.ceil(gasPrice * (useHigherGas ? 1.5 : 1.2)))}
 
   try {
     const txHash = await window.ethereum.request({
@@ -128,9 +136,9 @@ export const publicMint = async (mintAmount,totalPrice) => {
     return {
       success: true,
       status: (
-        <a href={`https://rinkeby.etherscan.io/tx/${txHash}`} target="_blank">
+        <a href={`https://cronoscan.com/tx/${txHash}`} target="_blank">
           <p>✅ Check out your transaction on Etherscan:</p>
-          <p>{`https://rinkeby.etherscan.io/tx/${txHash}`}</p>
+          <p>{`https://cronoscan.com/tx/${txHash}`}</p>
         </a>
       )
     }
