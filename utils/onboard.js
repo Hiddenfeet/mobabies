@@ -20,12 +20,12 @@ const initOnboard = init({
   wallets: [walletConnect, coinbaseWallet, injected, fortmatic],
   chains: [
     
-    {
-      id: '0x152',
-      token: 'TCRO',
-      label: 'Cronos Test Network',
-      rpcUrl: "https://evm-t3.cronos.org"
-    },
+    // {
+    //   id: '0x152',
+    //   token: 'TCRO',
+    //   label: 'Cronos Test Network',
+    //   rpcUrl: "https://evm-t3.cronos.org"
+    // },
     {
       id: '0x19',
       token: 'CRO',
