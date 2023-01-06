@@ -4,7 +4,7 @@ import walletConnectModule from '@web3-onboard/walletconnect'
 import coinbaseModule from '@web3-onboard/coinbase'
 import fortmaticModule from '@web3-onboard/fortmatic'
 
-import CrosmoIcon from '../Crosmo'
+// import CrosmoIcon from './cr_max.png'
 
 const RPC_URL = process.env.NEXT_PUBLIC_ALCHEMY_RPC_URL
 
@@ -46,7 +46,7 @@ const initOnboard = init({
   ],
   appMetadata: {
     name: 'CrosmoBabies',
-    icon: CrosmoIcon,
+    icon: '/images/cr_max.png',
     description: 'We are some Crosmo Naut.',
     recommendedInjectedWallets: [
       { name: 'MetaMask', url: 'https://metamask.io' },

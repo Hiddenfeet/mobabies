@@ -166,13 +166,15 @@ export default function Mint() {
         message: 'Minting is paused'
       })
     }
+    // no start sale
     if (saleState === 0) {
       return setStatus({
         success: false,
         message: 'Sale is not started'
       })
     }
-    if (saleState === 1 && (!isCrosmocraft && isCrosmonaut)) {
+    // pre-sale
+    if (saleState === 1 && (!hasCrosmocraft && !hasCrosmonaut)) {
       return setStatus({
         success: false,
         message: 'No Crosmocraft or Crosmonaut'
@@ -394,9 +396,9 @@ export default function Mint() {
                 Total Minted: {totalMinted} | Max Supply: {maxSupply}{!!wallet &&` | Wallet Limit: ${walletLimit}`}
               </div>
               <div className='flex flex-row mt-4 gap-4'>
-                <img src='/images/etherscan.png' width={40} height={40}/>
-                <img src='/images/discord.png' width={40} height={40}/>
-                <img src='/images/twitter.png' width={40} height={40}/>
+                <a href="https://cronoscan.com/address/0xC6373d6F369A9FfE7D93B21F2A5b0E16291d996D"><img src='/images/etherscan.png' width={40} height={40}/></a>
+                <a href="https://discord.gg/yhyJjZ2uWk"><img src='/images/discord.png' width={40} height={40}/></a>
+                <a href="https://twitter.com/crosmonaut"><img src='/images/twitter.png' width={40} height={40}/></a>
               </div>
             </div>
           </div>

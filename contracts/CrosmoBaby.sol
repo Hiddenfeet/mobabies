@@ -23,9 +23,9 @@ contract AlienCrosmobaby is ERC721Enumerable, Ownable, ReentrancyGuard, ERC2981 
     address[] holders;
     uint256[] counts;
 
-    address public teamWallet = 0xe1e4f26c0A7fE05E538197317A616bc9157C8D53;
+    address public teamWallet = 0xBaDa1b68A54f274814e050dbF0b6d1a8466e7A63;
     uint256 public teamFee = 920; 
-    address public artistWallet = 0x5BC4cceDB9440c5212C94B822f363Ca130010283;
+    address public artistWallet = 0x2b98dbF6E4af55FaD3f509152a867849b358677F;
     uint256 public artistFee = 80; 
     uint256 constant SCALE = 1000;
 
