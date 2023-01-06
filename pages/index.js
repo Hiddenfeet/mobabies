@@ -5,7 +5,6 @@ import { useConnectWallet, useSetChain, useWallets } from '@web3-onboard/react'
 import { config } from '../dapp.config'
 import {
   isPausedState,
-  presaleMint,
   publicMint,
   getSaleState,
   getTotalMinted,
@@ -79,22 +78,22 @@ export default function Mint() {
 
   useEffect(() => {
     const init = async () => {
-      setPaused(await isPausedState())
-      setTotalMinted(await getTotalMinted())
-      setMaxSupply(await getMaxSupply())
+      isPausedState().then(pausedState => setPaused(pausedState))
+      getTotalMinted().then(tMinted => setTotalMinted(tMinted))
+      getMaxSupply().then(maxSpl => setMaxSupply(maxSpl))
       
       let newBalance = 0
       if (!!wallet && !!wallet.accounts && wallet.accounts.length > 0) {
-        newBalance = await getBalance(wallet.accounts[0].address)
-        setBalance(newBalance)
-        const price = await getMintPrice(wallet.accounts[0].address)
-        setMintPrice(price)
-        const newTotal = new Big(price).multipliedBy(mintAmount).toString()
-        setTotalPrice(newTotal)
+        getBalance(wallet.accounts[0].address).then(blnc => setBalance(blnc))
+        getMintPrice(wallet.accounts[0].address).then(price => {
+          setMintPrice(price)
+          const newTotal = new Big(price).multipliedBy(mintAmount).toString()
+          setTotalPrice(newTotal)
+        })
       }
-
       const saleSt = await getSaleState()
       setSaleState(saleSt)
+      
       let wlLimit = 0
       if (saleSt === 1 && !!wallet && !!wallet.accounts && wallet.accounts.length > 0) {
         const isCraft = await isCrosmocraft(wallet.accounts[0].address)
@@ -134,32 +133,13 @@ export default function Mint() {
     }
   }
 
-  const presaleMintHandler = async () => {
-    setIsMinting(true)
-
-    const { success, status } = await presaleMint(mintAmount)
-
-    setStatus({
-      success,
-      message: status
-    })
-
-    setIsMinting(false)
-  }
-  const publicMintHandler = async () => {
-    setIsMinting(true)
-
-    const { success, status } = await publicMint(mintAmount)
-
-    setStatus({
-      success,
-      message: status
-    })
-
-    setIsMinting(false)
-  }
-
   const mint = async () => {
+    if (!wallet && !wallet.accounts && wallet.accounts.length === 0) {
+      return setStatus({
+        success: false,
+        status: 'To be able to mint, you need to connect your wallet'
+      })
+    }
     if (paused) {
       return setStatus({
         success: false,
@@ -207,7 +187,7 @@ export default function Mint() {
         message: 'Insufficient fund'
       })
     }
-    const { success, status } = await publicMint(mintAmount,totalPrice, useHigherGas)
+    const { success, status } = await publicMint(mintAmount,totalPrice, useHigherGas,wallet.accounts[0].address)
 
     setStatus({
       success,
@@ -323,7 +303,7 @@ export default function Mint() {
                     <div className="flex items-center space-x-3">
                       <p>
                         {new Big(totalPrice).div(new Big(10).pow(18)).toFixed(2)}{' '}
-                        ETH
+                        CRO
                       </p>{' '}
                       <span className="text-gray-400">+ GAS</span>
                     </div>
@@ -396,7 +376,6 @@ export default function Mint() {
                 Total Minted: {totalMinted} | Max Supply: {maxSupply}{!!wallet &&` | Wallet Limit: ${walletLimit}`}
               </div>
               <div className='flex flex-row mt-4 gap-4'>
-                <a href="https://cronoscan.com/address/0xC6373d6F369A9FfE7D93B21F2A5b0E16291d996D"><img src='/images/etherscan.png' width={40} height={40}/></a>
                 <a href="https://discord.gg/yhyJjZ2uWk"><img src='/images/discord.png' width={40} height={40}/></a>
                 <a href="https://twitter.com/crosmonaut"><img src='/images/twitter.png' width={40} height={40}/></a>
               </div>
