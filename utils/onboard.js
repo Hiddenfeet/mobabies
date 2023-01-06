@@ -19,23 +19,18 @@ const coinbaseWallet = coinbaseModule()
 const initOnboard = init({
   wallets: [walletConnect, coinbaseWallet, injected, fortmatic],
   chains: [
-    // {
-    //   id: '0x1',
-    //   token: 'ETH',
-    //   label: 'Ethereum Mainnet',
-    //   rpcUrl: 'https://mainnet.infura.io/v3/ababf9851fd845d0a167825f97eeb12b'
-    // },
-    // {
-    //   id: '0x3',
-    //   token: 'tROP',
-    //   label: 'Ethereum Ropsten Testnet',
-    //   rpcUrl: 'https://ropsten.infura.io/v3/ababf9851fd845d0a167825f97eeb12b'
-    // },
+    
     {
-      id: '0x4',
-      token: 'rETH',
-      label: 'Ethereum Rinkeby Testnet',
-      rpcUrl: RPC_URL
+      id: '0x152',
+      token: 'TCRO',
+      label: 'Cronos Test Network',
+      rpcUrl: "https://evm-t3.cronos.org"
+    },
+    {
+      id: '0x19',
+      token: 'CRO',
+      label: 'Cronos Network',
+      rpcUrl: "https://evm.cronos.org"
     }
     // {
     //   id: '0x89',

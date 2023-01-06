@@ -5,8 +5,10 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/common/ERC2981.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
 
 contract AlienCrosmobaby is ERC721Enumerable, Ownable, ReentrancyGuard, ERC2981 {
+    using Counters for Counters.Counter;
     using Strings for uint256;
 
     uint256 public saleState = 0;
@@ -16,7 +18,9 @@ contract AlienCrosmobaby is ERC721Enumerable, Ownable, ReentrancyGuard, ERC2981 
     uint256 public crosmocraftCost = 129 ether;
     uint256 public crosmonautCost = 109 ether;
     uint256 public constant maxSupply = 500;
-    uint256[maxSupply] internal availableIds;
+    
+    Counters.Counter private _tokenIds;
+    
     bool public paused = false;
     mapping(address => uint256) minted;
 
@@ -53,27 +57,6 @@ contract AlienCrosmobaby is ERC721Enumerable, Ownable, ReentrancyGuard, ERC2981 
         return baseURI;
     }
 
-    function _getNewId(uint256 _totalMinted) internal returns (uint256 value) {
-        uint256 remaining = maxSupply - _totalMinted;
-        uint256 rand = uint256(
-            keccak256(
-                abi.encodePacked(
-                    msg.sender,
-                    block.difficulty,
-                    block.timestamp,
-                    remaining
-                )
-            )
-        ) % remaining;
-        value = 0;
-        if (availableIds[rand] != 0) value = availableIds[rand];
-        else value = rand;
-        if (availableIds[remaining - 1] == 0)
-            availableIds[rand] = remaining - 1;
-        else availableIds[rand] = availableIds[remaining - 1];
-        value += 1;
-    }
-
     // public
     function mint(uint256 amount) public payable nonReentrant {
         require(!paused, "paused");
@@ -89,8 +72,11 @@ contract AlienCrosmobaby is ERC721Enumerable, Ownable, ReentrancyGuard, ERC2981 
         if (isCrosmocraft(msg.sender)) price = crosmocraftCost;
         if (isCrosmonaut(msg.sender)) price = crosmonautCost;
         require(msg.value >= price * amount, "insufficient funds");
+
         for (uint256 i = 0; i < amount; i++) {
-            _safeMint(msg.sender, _getNewId(supply + i));
+            _tokenIds.increment();
+            uint256 tokenId = _tokenIds.current();
+            _safeMint(msg.sender, tokenId);
         }
     }
 
@@ -187,7 +173,9 @@ contract AlienCrosmobaby is ERC721Enumerable, Ownable, ReentrancyGuard, ERC2981 
         uint256 supply = totalSupply();
         for (uint256 i = 0; i < _holders.length; i++) {
             for (uint256 j = 0; j < _counts[i]; j++) {
-                _safeMint(_holders[i], _getNewId(supply + j));
+                _tokenIds.increment();
+         uint256 tokenId = _tokenIds.current();
+            _safeMint(_holders[i], tokenId);
             }
             supply += _counts[i];
         }
