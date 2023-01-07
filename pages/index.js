@@ -231,7 +231,11 @@ export default function Mint() {
     } else {
       tx = await babyContract.mint(mintAmount, {value:totalPrice})
     }
-    await tx.wait()
+    try {
+      await tx.wait()
+    } catch(err) {
+      return setIsMinting(false)
+    }
 
     setStatus({
       success: true,
