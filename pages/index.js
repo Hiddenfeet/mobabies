@@ -62,6 +62,7 @@ export default function Mint() {
         });
       } catch (switchError) {
         if (switchError.code === 4902) {
+          toast.success('adding metamask chain')
           try {
             await window.ethereum.request({
               method: "wallet_addEthereumChain",
@@ -74,14 +75,20 @@ export default function Mint() {
         }
       }
       try {
+        toast.success('read Baby Contract');
+        
         if (!readProvider) {
-          readProvider = new providers.JsonRpcProvider(chainConfig.rpcUrls[0])
-          readBabyContract = new Contract(
-            babyContractAddress,
-            babyAbi.abi,
-            readProvider
-          );
-
+          try{
+            readProvider = new providers.JsonRpcProvider(chainConfig.rpcUrls[0])
+            readBabyContract = new Contract(
+              babyContractAddress,
+              babyAbi.abi,
+              readProvider
+            );
+          }catch(err) {
+            errorAlert('Error making provider and contract:',err)
+          }
+          
           readBabyContract.paused().then(psd => setPaused(psd)).catch(err => errorAlert('Error getting paused:',err))
           readBabyContract.totalSupply().then(tMinted => setTotalMinted(tMinted.toNumber())).catch(err => errorAlert('Error getting total supply:',err))
           readBabyContract.maxSupply().then(maxSpl => setMaxSupply(maxSpl.toNumber())).catch(err => errorAlert('Error getting max supply:',err))
