@@ -1,25 +1,27 @@
 import { useState, useEffect } from 'react'
 import Big from 'bignumber.js'
-import { initOnboard } from '../utils/onboard'
+import { useSelector, useDispatch } from "react-redux"
+import { providers, Contract, Wallet } from "ethers"
+import { ToastContainer, toast } from "react-toastify"
 import { useConnectWallet, useSetChain, useWallets } from '@web3-onboard/react'
 import { config } from '../dapp.config'
+import WalletConnectButton from "../components/WalletConnectButton";
+
 import {
-  isPausedState,
-  publicMint,
-  getSaleState,
-  getTotalMinted,
-  getMaxSupply,
-  isCrosmocraft,
-  isCrosmonaut,
-  getBalance,
-  getMintPrice,
-  getWalletBalance
-} from '../utils/interact'
+  babyContractAddress,
+  chainConfig,
+} from "../constants";
+import babyAbi from "../artifacts/contracts/CrosmoBaby.sol/AlienCrosmobaby.json";
+import {
+  onLogout
+} from "../globalState/user";
+
+import "react-toastify/dist/ReactToastify.css"
+
+let readBabyContract, readProvider
 
 export default function Mint() {
-  const [{ wallet, connecting }, connect, disconnect] = useConnectWallet()
-  const [{ chains, connectedChain, settingChain }, setChain] = useSetChain()
-  const connectedWallets = useWallets()
+  const dispatch = useDispatch();
 
   const [maxSupply, setMaxSupply] = useState(0)
   const [totalMinted, setTotalMinted] = useState(0)
@@ -37,89 +39,174 @@ export default function Mint() {
   const [status, setStatus] = useState(null)
   const [mintAmount, setMintAmount] = useState(1)
   const [isMinting, setIsMinting] = useState(false)
-  const [onboard, setOnboard] = useState(null)
+  
+  const walletAddress = useSelector((state) => {
+    return state.user.address;
+  });
+  const provider = useSelector((state) => {
+    return state.user.provider;
+  });
+  const babyContract = useSelector((state) => {
+    return state.user.babyContract;
+  });
 
   useEffect(() => {
-    setOnboard(initOnboard)
-  }, [])
-
-  useEffect(() => {
-    if (!connectedWallets.length) return
-
-    const connectedWalletsLabelArray = connectedWallets.map(
-      ({ label }) => label
-    )
-    window.localStorage.setItem(
-      'connectedWallets',
-      JSON.stringify(connectedWalletsLabelArray)
-    )
-  }, [connectedWallets])
-
-  useEffect(() => {
-    if (!onboard) return
-
-    const previouslyConnectedWallets = JSON.parse(
-      window.localStorage.getItem('connectedWallets')
-    )
-
-    if (previouslyConnectedWallets?.length) {
-      async function setWalletFromLocalStorage() {
-        await connect({
-          autoSelect: {
-            label: previouslyConnectedWallets[0],
-            disableModals: true
+    (async () => {
+      try {
+        await window.ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: chainConfig.chainId }],
+        });
+      } catch (switchError) {
+        if (switchError.code === 4902) {
+          try {
+            await window.ethereum.request({
+              method: "wallet_addEthereumChain",
+              params: [chainConfig],
+            });
+          } catch (err) {
+            console.log("error adding chain:", err);
+            return toast.error(JSON.stringify(err));
           }
-        })
-      }
-
-      setWalletFromLocalStorage()
-    }
-  }, [onboard, connect])
-
-  useEffect(() => {
-    const init = async () => {
-      isPausedState().then(pausedState => setPaused(pausedState))
-      getTotalMinted().then(tMinted => setTotalMinted(tMinted))
-      getMaxSupply().then(maxSpl => setMaxSupply(maxSpl))
-      
-      let newBalance = 0
-      if (!!wallet && !!wallet.accounts && wallet.accounts.length > 0) {
-        getBalance(wallet.accounts[0].address).then(blnc => setBalance(blnc))
-        getMintPrice(wallet.accounts[0].address).then(price => {
-          setMintPrice(price)
-          const newTotal = new Big(price).multipliedBy(mintAmount).toString()
-          setTotalPrice(newTotal)
-        })
-      }
-      const saleSt = await getSaleState()
-      setSaleState(saleSt)
-      
-      let wlLimit = 0
-      if (saleSt === 1 && !!wallet && !!wallet.accounts && wallet.accounts.length > 0) {
-        const isCraft = await isCrosmocraft(wallet.accounts[0].address)
-        const isNaut = await isCrosmonaut(wallet.accounts[0].address)
-        setHasCrosmocraft(isCraft)
-        setHasCrosmonaut(isNaut)
-        if (isCraft || isNaut) {
-          wlLimit = 4
+          console.log('error switching chain:',switchError)
+          return toast.error(JSON.stringify(switchError));
         }
-      } else if (saleSt === 2) {
-        wlLimit = 10
       }
-      setWalletLimit(wlLimit)
+      try {
+        readProvider = new providers.JsonRpcProvider(chainConfig.rpcUrls[0])
+        console.log('making the contract',{babyContractAddress,babyAbi,readProvider})
+        readBabyContract = new Contract(
+          babyContractAddress,
+          babyAbi.abi,
+          readProvider
+        );
+        console.log('made the contract')
 
-      setMaxMintAmount(
-        Math.max(wlLimit - newBalance, 0)
-      )
-    }
+        readBabyContract.paused().then(psd => setPaused(psd)).catch(err => console.log('Error getting paused:',err))
+        readBabyContract.totalSupply().then(tMinted => setTotalMinted(tMinted.toNumber())).catch(err => console.log('Error getting total supply:',err))
+        readBabyContract.maxSupply().then(maxSpl => setMaxSupply(maxSpl.toNumber())).catch(err => console.log('Error getting max supply:',err))
 
-    init()
-  }, [wallet])
+        let newBalance = 0
+        if (!!walletAddress) {
+          readProvider.getBalance(walletAddress).then(blnc => setBalance(blnc.toString())).catch(err => console.log('Error getting balance:',err))
+          readBabyContract.mintCost(walletAddress).then(price => {
+            setMintPrice(price.toString())
+            const newTotal = new Big(price.toString()).multipliedBy(mintAmount).toString()
+            console.log('totalprice:',newTotal)
+            setTotalPrice(newTotal)
+          }).catch(err => console.log('Error getting mint cost:',err))
+        }
+
+        readBabyContract.saleState().then(async saleSt => {
+          setSaleState(saleSt.toNumber())
+          let wlLimit = 0
+          if (saleSt.toNumber() === 1 && !!walletAddress) {
+            const isCraft = await readBabyContract.isCrosmocraft(walletAddress)
+            const isNaut = await readBabyContract.isCrosmonaut(walletAddress)
+            console.log({isCraft,isNaut})
+            setHasCrosmocraft(isCraft)
+            setHasCrosmonaut(isNaut)
+            if (isCraft || isNaut) {
+              wlLimit = 4
+            }
+          } else if (saleSt.toNumber() === 2) {
+            wlLimit = 10
+          }
+          setWalletLimit(wlLimit)
+
+          setMaxMintAmount(
+            Math.max(wlLimit - newBalance, 0)
+          )
+        }).catch(err => console.log('Error getting isowner:',err))
+      } catch (err) {
+        console.log('Error getting contract data:',err)
+        return toast.error(JSON.stringify(err));
+      }
+    })();
+  }, [walletAddress])
+
+  // useEffect(() => {
+  //   if (!connectedWallets.length) return
+
+  //   const connectedWalletsLabelArray = connectedWallets.map(
+  //     ({ label }) => label
+  //   )
+  //   window.localStorage.setItem(
+  //     'connectedWallets',
+  //     JSON.stringify(connectedWalletsLabelArray)
+  //   )
+  // }, [connectedWallets])
+
+  // useEffect(() => {
+  //   if (!onboard) return
+
+  //   const previouslyConnectedWallets = JSON.parse(
+  //     window.localStorage.getItem('connectedWallets')
+  //   )
+
+  //   if (previouslyConnectedWallets?.length) {
+  //     async function setWalletFromLocalStorage() {
+  //       await connect({
+  //         autoSelect: {
+  //           label: previouslyConnectedWallets[0],
+  //           disableModals: true
+  //         }
+  //       })
+  //     }
+
+  //     setWalletFromLocalStorage()
+  //   }
+  // }, [onboard, connect])
+
+  // useEffect(() => {
+  //   const init = async () => {
+  //     // isPausedState().then(pausedState => setPaused(pausedState))
+  //     // getTotalMinted().then(tMinted => setTotalMinted(tMinted))
+  //     // getMaxSupply().then(maxSpl => setMaxSupply(maxSpl))
+      
+  //     // let newBalance = 0
+  //     // if (!!wallet && !!wallet.accounts && wallet.accounts.length > 0) {
+  //     //   getBalance(wallet.accounts[0].address).then(blnc => setBalance(blnc))
+  //     //   getMintPrice(wallet.accounts[0].address).then(price => {
+  //     //     setMintPrice(price)
+  //     //     const newTotal = new Big(price).multipliedBy(mintAmount).toString()
+  //     //     setTotalPrice(newTotal)
+  //     //   })
+  //     // }
+  //     // const saleSt = await getSaleState()
+  //     // setSaleState(saleSt)
+      
+  //     let wlLimit = 0
+  //     if (saleSt === 1 && !!wallet && !!wallet.accounts && wallet.accounts.length > 0) {
+  //       const isCraft = await isCrosmocraft(wallet.accounts[0].address)
+  //       const isNaut = await isCrosmonaut(wallet.accounts[0].address)
+  //       setHasCrosmocraft(isCraft)
+  //       setHasCrosmonaut(isNaut)
+  //       if (isCraft || isNaut) {
+  //         wlLimit = 4
+  //       }
+  //     } else if (saleSt === 2) {
+  //       wlLimit = 10
+  //     }
+  //     setWalletLimit(wlLimit)
+
+  //     setMaxMintAmount(
+  //       Math.max(wlLimit - newBalance, 0)
+  //     )
+  //   }
+
+  //   init()
+  // }, [wallet])
 
   useEffect(() => {
     const newTotal = new Big(mintPrice).multipliedBy(mintAmount).toString()
+    console.log('totalprice:',newTotal)
     setTotalPrice(newTotal)
   }, [mintAmount])
+
+  const logout = async () => {
+    dispatch(onLogout());
+  };
 
   const incrementMintAmount = () => {
     if (mintAmount < maxMintAmount) {
@@ -134,7 +221,7 @@ export default function Mint() {
   }
 
   const mint = async () => {
-    if (!wallet && !wallet.accounts && wallet.accounts.length === 0) {
+    if (!walletAddress) {
       return setStatus({
         success: false,
         status: 'To be able to mint, you need to connect your wallet'
@@ -179,15 +266,13 @@ export default function Mint() {
       })
     }
     
-    const walletBlnc = await getWalletBalance(wallet.accounts[0].address)
-    console.log({walletBlnc,totalPrice,mintAmount})
-    if (new Big(walletBlnc).lt(new Big(totalPrice))) {
+    if (new Big(balance).lt(new Big(totalPrice))) {
       return setStatus({
         success: false,
         message: 'Insufficient fund'
       })
     }
-    const { success, status } = await publicMint(mintAmount,totalPrice, useHigherGas,wallet.accounts[0].address)
+    // const { success, status } = await publicMint(mintAmount,totalPrice, useHigherGas,walletAddress)
 
     setStatus({
       success,
@@ -207,13 +292,11 @@ export default function Mint() {
 
         <div className="flex flex-col items-center justify-center h-full w-full px-2 md:px-10">
           <div className="relative z-1 md:max-w-3xl w-full bg-gray-900/90 filter backdrop-blur-sm py-4 rounded-md px-2 md:px-10 flex flex-col items-center">
-            {wallet && (
+            {walletAddress && (
               <button
                 className="absolute right-4 bg-indigo-600 transition duration-200 ease-in-out font-chalk border-2 border-[rgba(0,0,0,1)] shadow-[0px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none px-4 py-2 rounded-md text-sm text-white tracking-wide uppercase"
                 onClick={() =>
-                  disconnect({
-                    label: wallet.label
-                  })
+                  logout()
                 }
               >
                 Disconnect
@@ -223,10 +306,10 @@ export default function Mint() {
               {paused ? 'Paused' : (saleState === 1 ? 'Pre-Sale' : (saleState === 2 ? 'Public Sale' : 'Sale not started'))}
             </h1>
             <h3 className="text-sm text-pink-200 tracking-widest">
-              {wallet?.accounts[0]?.address
-                ? wallet?.accounts[0]?.address.slice(0, 8) +
+              {walletAddress
+                ? walletAddress.slice(0, 8) +
                   '...' +
-                  wallet?.accounts[0]?.address.slice(-4)
+                  walletAddress.slice(-4)
                 : ''}
             </h3>
 
@@ -311,7 +394,8 @@ export default function Mint() {
                 </div>
 
                 {/* Mint Button && Connect Wallet Button */}
-                {wallet ? (
+                <WalletConnectButton paused={paused} isMinting={isMinting} mint={mint}/>
+                {/* {walletAddress ? (
                   <button
                     className={` ${
                       paused || isMinting
@@ -330,7 +414,7 @@ export default function Mint() {
                   >
                     Connect Wallet
                   </button>
-                )}
+                )} */}
                 <div className="mt-3">
                 <input
                   className="text-sm text-pink-200 tracking-widest mt-3 mr-1"
@@ -373,7 +457,7 @@ export default function Mint() {
                 <span className="break-all ...">{config.contractAddress}</span>
               </a>
               <div className="text-gray-400 mt-4">
-                Total Minted: {totalMinted} | Max Supply: {maxSupply}{!!wallet &&` | Wallet Limit: ${walletLimit}`}
+                Total Minted: {totalMinted} | Max Supply: {maxSupply}{!!walletAddress &&` | Wallet Limit: ${walletLimit}`}
               </div>
               <div className='flex flex-row mt-4 gap-4'>
                 <a href="https://discord.gg/yhyJjZ2uWk"><img src='/images/discord.png' width={40} height={40}/></a>
@@ -383,6 +467,7 @@ export default function Mint() {
           </div>
         </div>
       </div>
+      <ToastContainer />
     </div>
   )
 }
