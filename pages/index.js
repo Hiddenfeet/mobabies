@@ -55,7 +55,7 @@ export default function Mint() {
   useEffect(() => {
     (async () => {
       try {
-        if (!!window && !!window.ethereum) {
+        if (!!window && !!window.ethereum && window.ethereum.networkVersion !== chainConfig.chainIdDecimal) {
           await window.ethereum.request({
             method: "wallet_switchEthereumChain",
             params: [{ chainId: chainConfig.chainId }],

@@ -26,6 +26,7 @@ export const chainConfig = {
     symbol: "CRO",
     decimals: 18,
   },
+  chainIdDecimal: 25
 };
 
 //Testnet
