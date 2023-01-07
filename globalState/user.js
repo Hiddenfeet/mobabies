@@ -28,12 +28,16 @@ const userSlice = createSlice({
     babyContract: null,
     correctChain: false,
     showWrongChainModal: false,
-    type: ""
+    isMetamask: false,
   },
   reducers: {
     accountChanged(state, action) {
       state.balance = action.payload.balance;
       state.babyContract = action.payload.babyContract;
+    },
+
+    setIsMetamask(state, action) {
+      state.isMetamask = action.payload.isMetamask
     },
 
     onCorrectChain(state, action) {
@@ -56,11 +60,6 @@ const userSlice = createSlice({
 
     connectingWallet(state, action) {
       state.connectingWallet = action.payload.connecting;
-    },
-
-    changeType(state,action) {
-      console.log('changing type:',action)
-      state.type = action.payload.type;
     },
 
     setShowWrongChainModal(state, action) {
@@ -96,7 +95,7 @@ export const {
   setShowWrongChainModal,
   onBasicAccountData,
   onLogout,
-  changeType
+  setIsMetamask
 } = userSlice.actions;
 export const user = userSlice.reducer;
 
@@ -162,8 +161,6 @@ export const connectAccount =
       console.log("provider:", providerOptions.walletconnect);
     }
 
-    dispatch(changeType({type: !type ? 'metamask' : type}))
-
     const web3ModalWillShowUp = !localStorage.getItem(
       "WEB3_CONNECT_CACHED_PROVIDER"
     );
@@ -186,10 +183,14 @@ export const connectAccount =
         return null;
       });
 
+    console.log('web3provider:',web3provider)
+
     if (!web3provider) {
       dispatch(onLogout());
       return;
     }
+
+    dispatch(setIsMetamask({isMetamask:web3provider.isMetaMask}))
 
     try {
       dispatch(connectingWallet({ connecting: true }));

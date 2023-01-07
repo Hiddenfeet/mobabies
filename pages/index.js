@@ -48,7 +48,8 @@ export default function Mint() {
   const walletAddress = useSelector((state) => {
     return state.user.address;
   });
-  const type = useSelector((state => state.user.type))
+  const correctChain = useSelector(state => state.user.correctChain)
+  const isMetamask = useSelector(state => state.user.isMetamask)
   const babyContract = useSelector((state) => {
     return state.user.babyContract;
   });
@@ -56,14 +57,13 @@ export default function Mint() {
   useEffect(() => {
     
     (async () => {
-      toast.success("current " + walletAddress + "  type:" + type )
       try {
         if (!!window && !!window.ethereum) {
           toast.success('window ethereum exists')
         } else {
           toast.success('window ethereum does not exist')
         }
-        if (!!walletAddress && type === 'metamask' && !!window && !!window.ethereum && window.ethereum.networkVersion != chainConfig.chainIdDecimal) {
+        if (!!walletAddress && isMetamask && !!window && !!window.ethereum && !correctChain) {
           await window.ethereum.request({
             method: "wallet_switchEthereumChain",
             params: [{ chainId: chainConfig.chainId }],
