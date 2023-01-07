@@ -87,9 +87,12 @@ export default function Mint() {
         }
         let newBalance = 0
         if (!!walletAddress) {
-          readProvider.getBalance(walletAddress).then(blnc => setBalance(blnc.toString())).catch(err => errorAlert('Error getting balance:',err))
+          toast.success('Start Getting wallet balance from ' + walletAddress)
+          readProvider.getBalance(walletAddress).then(blnc => {toast.success('Success get wallet balance : ' + blnc.toString()); setBalance(blnc.toString())}).catch(err => errorAlert('Error getting balance:',err))
+          toast.success('Start Getting cost from ' + walletAddress)
           readBabyContract.mintCost(walletAddress).then(price => {
             setMintPrice(price.toString())
+            toast.success('Success get mint price : ' + price.toString());
             const newTotal = new Big(price.toString()).multipliedBy(mintAmount).toString()
             console.log('totalprice:',newTotal)
             setTotalPrice(newTotal)
