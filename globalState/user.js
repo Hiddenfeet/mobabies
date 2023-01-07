@@ -28,6 +28,7 @@ const userSlice = createSlice({
     babyContract: null,
     correctChain: false,
     showWrongChainModal: false,
+    type: ""
   },
   reducers: {
     accountChanged(state, action) {
@@ -55,6 +56,11 @@ const userSlice = createSlice({
 
     connectingWallet(state, action) {
       state.connectingWallet = action.payload.connecting;
+    },
+
+    changeType(state,action) {
+      console.log('changing type:',action)
+      state.type = action.payload.type;
     },
 
     setShowWrongChainModal(state, action) {
@@ -90,6 +96,7 @@ export const {
   setShowWrongChainModal,
   onBasicAccountData,
   onLogout,
+  changeType
 } = userSlice.actions;
 export const user = userSlice.reducer;
 
@@ -154,6 +161,8 @@ export const connectAccount =
       };
       console.log("provider:", providerOptions.walletconnect);
     }
+
+    dispatch(changeType({type}))
 
     const web3ModalWillShowUp = !localStorage.getItem(
       "WEB3_CONNECT_CACHED_PROVIDER"

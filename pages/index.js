@@ -48,6 +48,7 @@ export default function Mint() {
   const walletAddress = useSelector((state) => {
     return state.user.address;
   });
+  const type = useSelector((state => state.user.type))
   const babyContract = useSelector((state) => {
     return state.user.babyContract;
   });
@@ -55,7 +56,7 @@ export default function Mint() {
   useEffect(() => {
     (async () => {
       try {
-        if (!!window && !!window.ethereum && window.ethereum.networkVersion !== chainConfig.chainIdDecimal) {
+        if (!!walletAddress && !type && !!window && !!window.ethereum && window.ethereum.networkVersion !== chainConfig.chainIdDecimal) {
           await window.ethereum.request({
             method: "wallet_switchEthereumChain",
             params: [{ chainId: chainConfig.chainId }],
