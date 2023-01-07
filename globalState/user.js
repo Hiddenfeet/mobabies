@@ -162,7 +162,7 @@ export const connectAccount =
       console.log("provider:", providerOptions.walletconnect);
     }
 
-    dispatch(changeType({type}))
+    dispatch(changeType({type: !type ? 'metamask' : type}))
 
     const web3ModalWillShowUp = !localStorage.getItem(
       "WEB3_CONNECT_CACHED_PROVIDER"
