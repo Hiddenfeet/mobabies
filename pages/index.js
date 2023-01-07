@@ -54,7 +54,7 @@ export default function Mint() {
 
   useEffect(() => {
     (async () => {
-      toast.success('Current wallet address:',walletAddress || '')
+      toast.success('Current wallet address:' + walletAddress || '')
       try {
         await window.ethereum.request({
           method: "wallet_switchEthereumChain",
