@@ -63,7 +63,7 @@ export default function Mint() {
         } else {
           toast.success('window ethereum does not exist')
         }
-        if (!!walletAddress && type === 'metamask' && !!window && !!window.ethereum && window.ethereum.networkVersion !== chainConfig.chainIdDecimal) {
+        if (!!walletAddress && type === 'metamask' && !!window && !!window.ethereum && window.ethereum.networkVersion != chainConfig.chainIdDecimal) {
           await window.ethereum.request({
             method: "wallet_switchEthereumChain",
             params: [{ chainId: chainConfig.chainId }],
