@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react'
 import Big from 'bignumber.js'
 import { useSelector, useDispatch } from "react-redux"
-import { providers, Contract, Wallet } from "ethers"
+import { providers, Contract } from "ethers"
 import { ToastContainer, toast } from "react-toastify"
-import { useConnectWallet, useSetChain, useWallets } from '@web3-onboard/react'
 import { config } from '../dapp.config'
 import WalletConnectButton from "../components/WalletConnectButton";
 
@@ -20,6 +19,11 @@ import "react-toastify/dist/ReactToastify.css"
 
 let readBabyContract, readProvider
 
+const errorAlert = (title, err) => {
+  console.log(title, JSON.stringify(err))
+  toast.error(`${title} ${JSON.stringify(err)}`)
+}
+
 export default function Mint() {
   const dispatch = useDispatch();
 
@@ -30,6 +34,7 @@ export default function Mint() {
   const [saleState, setSaleState] = useState(0)
   const [walletLimit, setWalletLimit] = useState(0)
   const [balance, setBalance] = useState(0)
+  const [nftBalance, setNftBalance] = useState(0)
   const [hasCrosmocraft, setHasCrosmocraft] = useState(false)
   const [hasCrosmonaut, setHasCrosmonaut] = useState(false)
   const [mintPrice, setMintPrice] = useState('0')
@@ -42,9 +47,6 @@ export default function Mint() {
   
   const walletAddress = useSelector((state) => {
     return state.user.address;
-  });
-  const provider = useSelector((state) => {
-    return state.user.provider;
   });
   const babyContract = useSelector((state) => {
     return state.user.babyContract;
@@ -65,38 +67,37 @@ export default function Mint() {
               params: [chainConfig],
             });
           } catch (err) {
-            console.log("error adding chain:", err);
-            return toast.error(JSON.stringify(err));
+            return errorAlert("error adding chain:",err)
           }
-          console.log('error switching chain:',switchError)
-          return toast.error(JSON.stringify(switchError));
+          return errorAlert('error switching chain:',switchError)
         }
       }
       try {
-        readProvider = new providers.JsonRpcProvider(chainConfig.rpcUrls[0])
-        console.log('making the contract',{babyContractAddress,babyAbi,readProvider})
-        readBabyContract = new Contract(
-          babyContractAddress,
-          babyAbi.abi,
-          readProvider
-        );
-        console.log('made the contract')
+        if (!readProvider) {
+          readProvider = new providers.JsonRpcProvider(chainConfig.rpcUrls[0])
+          readBabyContract = new Contract(
+            babyContractAddress,
+            babyAbi.abi,
+            readProvider
+          );
 
-        readBabyContract.paused().then(psd => setPaused(psd)).catch(err => console.log('Error getting paused:',err))
-        readBabyContract.totalSupply().then(tMinted => setTotalMinted(tMinted.toNumber())).catch(err => console.log('Error getting total supply:',err))
-        readBabyContract.maxSupply().then(maxSpl => setMaxSupply(maxSpl.toNumber())).catch(err => console.log('Error getting max supply:',err))
-
+          readBabyContract.paused().then(psd => setPaused(psd)).catch(err => errorAlert('Error getting paused:',err))
+          readBabyContract.totalSupply().then(tMinted => setTotalMinted(tMinted.toNumber())).catch(err => errorAlert('Error getting total supply:',err))
+          readBabyContract.maxSupply().then(maxSpl => setMaxSupply(maxSpl.toNumber())).catch(err => errorAlert('Error getting max supply:',err))
+        }
         let newBalance = 0
         if (!!walletAddress) {
-          readProvider.getBalance(walletAddress).then(blnc => setBalance(blnc.toString())).catch(err => console.log('Error getting balance:',err))
+          readProvider.getBalance(walletAddress).then(blnc => setBalance(blnc.toString())).catch(err => errorAlert('Error getting balance:',err))
           readBabyContract.mintCost(walletAddress).then(price => {
             setMintPrice(price.toString())
             const newTotal = new Big(price.toString()).multipliedBy(mintAmount).toString()
             console.log('totalprice:',newTotal)
             setTotalPrice(newTotal)
-          }).catch(err => console.log('Error getting mint cost:',err))
+          }).catch(err => {errorAlert('Error getting mint cost:',err);return ;})
+          newBalance = (await readBabyContract.balanceOf(walletAddress)).toNumber()
+          setNftBalance(newBalance)
         }
-
+        
         readBabyContract.saleState().then(async saleSt => {
           setSaleState(saleSt.toNumber())
           let wlLimit = 0
@@ -117,86 +118,12 @@ export default function Mint() {
           setMaxMintAmount(
             Math.max(wlLimit - newBalance, 0)
           )
-        }).catch(err => console.log('Error getting isowner:',err))
+        }).catch(err => errorAlert('Error getting isowner:',err))
       } catch (err) {
-        console.log('Error getting contract data:',err)
-        return toast.error(JSON.stringify(err));
+        errorAlert('Error getting contract data:',err)
       }
     })();
   }, [walletAddress])
-
-  // useEffect(() => {
-  //   if (!connectedWallets.length) return
-
-  //   const connectedWalletsLabelArray = connectedWallets.map(
-  //     ({ label }) => label
-  //   )
-  //   window.localStorage.setItem(
-  //     'connectedWallets',
-  //     JSON.stringify(connectedWalletsLabelArray)
-  //   )
-  // }, [connectedWallets])
-
-  // useEffect(() => {
-  //   if (!onboard) return
-
-  //   const previouslyConnectedWallets = JSON.parse(
-  //     window.localStorage.getItem('connectedWallets')
-  //   )
-
-  //   if (previouslyConnectedWallets?.length) {
-  //     async function setWalletFromLocalStorage() {
-  //       await connect({
-  //         autoSelect: {
-  //           label: previouslyConnectedWallets[0],
-  //           disableModals: true
-  //         }
-  //       })
-  //     }
-
-  //     setWalletFromLocalStorage()
-  //   }
-  // }, [onboard, connect])
-
-  // useEffect(() => {
-  //   const init = async () => {
-  //     // isPausedState().then(pausedState => setPaused(pausedState))
-  //     // getTotalMinted().then(tMinted => setTotalMinted(tMinted))
-  //     // getMaxSupply().then(maxSpl => setMaxSupply(maxSpl))
-      
-  //     // let newBalance = 0
-  //     // if (!!wallet && !!wallet.accounts && wallet.accounts.length > 0) {
-  //     //   getBalance(wallet.accounts[0].address).then(blnc => setBalance(blnc))
-  //     //   getMintPrice(wallet.accounts[0].address).then(price => {
-  //     //     setMintPrice(price)
-  //     //     const newTotal = new Big(price).multipliedBy(mintAmount).toString()
-  //     //     setTotalPrice(newTotal)
-  //     //   })
-  //     // }
-  //     // const saleSt = await getSaleState()
-  //     // setSaleState(saleSt)
-      
-  //     let wlLimit = 0
-  //     if (saleSt === 1 && !!wallet && !!wallet.accounts && wallet.accounts.length > 0) {
-  //       const isCraft = await isCrosmocraft(wallet.accounts[0].address)
-  //       const isNaut = await isCrosmonaut(wallet.accounts[0].address)
-  //       setHasCrosmocraft(isCraft)
-  //       setHasCrosmonaut(isNaut)
-  //       if (isCraft || isNaut) {
-  //         wlLimit = 4
-  //       }
-  //     } else if (saleSt === 2) {
-  //       wlLimit = 10
-  //     }
-  //     setWalletLimit(wlLimit)
-
-  //     setMaxMintAmount(
-  //       Math.max(wlLimit - newBalance, 0)
-  //     )
-  //   }
-
-  //   init()
-  // }, [wallet])
 
   useEffect(() => {
     const newTotal = new Big(mintPrice).multipliedBy(mintAmount).toString()
@@ -253,7 +180,7 @@ export default function Mint() {
         message: 'Mint amount should not be 0'
       })
     }
-    if (balance + mintAmount > walletLimit) {
+    if (nftBalance + mintAmount > walletLimit) {
       return setStatus({
         success: false,
         message: 'Exceeds max mintable nfts per wallet'
@@ -273,11 +200,35 @@ export default function Mint() {
       })
     }
     // const { success, status } = await publicMint(mintAmount,totalPrice, useHigherGas,walletAddress)
+    setIsMinting(true)
+    const gasEstimated = await babyContract.estimateGas.mint(mintAmount, {
+      value: totalPrice,
+    });
+    let tx
+    if (useHigherGas) {
+      const gas = Math.ceil(gasEstimated.toNumber() * 1.5);
+      const gasNumber = BigNumber.from(gas);
+      tx = await babyContract.mint(mintAmount, {
+        value: totalPrice,
+        gasLimit: gasNumber,
+      });
+    } else {
+      tx = await babyContract.mint(mintAmount, {value:totalPrice})
+    }
+    await tx.wait()
 
     setStatus({
       success,
       message: status
     })
+
+    let newBalance
+    readBabyContract.totalSupply().then(tMinted => setTotalMinted(tMinted.toNumber())).catch(err => errorAlert('Error getting total supply:',err))
+    newBalance = (await readBabyContract.balanceOf(walletAddress)).toNumber()
+    setNftBalance(newBalance)
+    setMaxMintAmount(
+      Math.max(wlLimit - newBalance, 0)
+    )
 
     setIsMinting(false)
   }
