@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import Big from 'bignumber.js'
 import { useSelector, useDispatch } from "react-redux"
-import { providers, Contract } from "ethers"
+import { providers, Contract, BigNumber } from "ethers"
 import { ToastContainer, toast } from "react-toastify"
 import { config } from '../dapp.config'
 import WalletConnectButton from "../components/WalletConnectButton";
@@ -54,11 +54,27 @@ export default function Mint() {
 
   useEffect(() => {
     (async () => {
-      toast.success('Current wallet address:' + walletAddress || '')
-      
       try {
-        toast.success('read Baby Contract');
-        
+        if (!!window && !!window.ethereum) {
+          await window.ethereum.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId: chainConfig.chainId }],
+          });
+        }
+      } catch (switchError) {
+        if (switchError.code === 4902) {
+          try {
+            await window.ethereum.request({
+              method: "wallet_addEthereumChain",
+              params: [chainConfig],
+            });
+          } catch (err) {
+            return errorAlert("error adding chain:",err)
+          }
+          return errorAlert('error switching chain:',switchError)
+        }
+      }
+      try {
         if (!readProvider) {
           try{
             readProvider = new providers.JsonRpcProvider(chainConfig.rpcUrls[0])
@@ -76,14 +92,10 @@ export default function Mint() {
           readBabyContract.maxSupply().then(maxSpl => setMaxSupply(maxSpl.toNumber())).catch(err => errorAlert('Error getting max supply:',err))
         }
         let newBalance = 0
-        toast.success('ready for read balance data');
         if (!!walletAddress) {
-          toast.success('Start Getting wallet balance from ' + walletAddress)
-          readProvider.getBalance(walletAddress).then(blnc => {toast.success('Success get wallet balance : ' + blnc.toString()); setBalance(blnc.toString())}).catch(err => errorAlert('Error getting balance:',err))
-          toast.success('Start Getting cost from ' + walletAddress)
+          readProvider.getBalance(walletAddress).then(blnc => { setBalance(blnc.toString())}).catch(err => errorAlert('Error getting balance:',err))
           readBabyContract.mintCost(walletAddress).then(price => {
             setMintPrice(price.toString())
-            toast.success('Success get mint price : ' + price.toString());
             const newTotal = new Big(price.toString()).multipliedBy(mintAmount).toString()
             console.log('totalprice:',newTotal)
             setTotalPrice(newTotal)
@@ -212,8 +224,8 @@ export default function Mint() {
     await tx.wait()
 
     setStatus({
-      success,
-      message: status
+      success: true,
+      message: 'Minting Success'
     })
 
     let newBalance
@@ -221,7 +233,7 @@ export default function Mint() {
     newBalance = (await readBabyContract.balanceOf(walletAddress)).toNumber()
     setNftBalance(newBalance)
     setMaxMintAmount(
-      Math.max(wlLimit - newBalance, 0)
+      Math.max(walletLimit - newBalance, 0)
     )
 
     setIsMinting(false)
