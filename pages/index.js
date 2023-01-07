@@ -171,6 +171,12 @@ export default function Mint() {
         status: 'To be able to mint, you need to connect your wallet'
       })
     }
+    if (!correctChain) {
+      return setStatus({
+        success: false,
+        status: 'To be able to mint, you need to change your network to Cronos'
+      })
+    }
     if (paused) {
       return setStatus({
         success: false,
