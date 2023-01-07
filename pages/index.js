@@ -86,6 +86,7 @@ export default function Mint() {
           readBabyContract.maxSupply().then(maxSpl => setMaxSupply(maxSpl.toNumber())).catch(err => errorAlert('Error getting max supply:',err))
         }
         let newBalance = 0
+        toast.success('Current wallet address:',walletAddress || '')
         if (!!walletAddress) {
           toast.success('Start Getting wallet balance from ' + walletAddress)
           readProvider.getBalance(walletAddress).then(blnc => {toast.success('Success get wallet balance : ' + blnc.toString()); setBalance(blnc.toString())}).catch(err => errorAlert('Error getting balance:',err))
