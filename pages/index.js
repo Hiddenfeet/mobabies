@@ -58,11 +58,6 @@ export default function Mint() {
     
     (async () => {
       try {
-        if (!!window && !!window.ethereum) {
-          toast.success('window ethereum exists')
-        } else {
-          toast.success('window ethereum does not exist')
-        }
         if (!!walletAddress && isMetamask && !!window && !!window.ethereum && !correctChain) {
           await window.ethereum.request({
             method: "wallet_switchEthereumChain",
@@ -84,7 +79,6 @@ export default function Mint() {
       }
       
       try {
-        toast.success("ready for provider " )
         if (!readProvider) {
           try{
             readProvider = new providers.JsonRpcProvider(chainConfig.rpcUrls[0])
@@ -101,7 +95,6 @@ export default function Mint() {
           readBabyContract.totalSupply().then(tMinted => setTotalMinted(tMinted.toNumber())).catch(err => errorAlert('Error getting total supply:',err))
           readBabyContract.maxSupply().then(maxSpl => setMaxSupply(maxSpl.toNumber())).catch(err => errorAlert('Error getting max supply:',err))
         }
-        toast.success("ready for balance " )
         let newBalance = 0
         if (!!walletAddress) {
           readProvider.getBalance(walletAddress).then(blnc => { setBalance(blnc.toString())}).catch(err => errorAlert('Error getting balance:',err))
