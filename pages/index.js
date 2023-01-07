@@ -55,25 +55,7 @@ export default function Mint() {
   useEffect(() => {
     (async () => {
       toast.success('Current wallet address:' + walletAddress || '')
-      try {
-        await window.ethereum.request({
-          method: "wallet_switchEthereumChain",
-          params: [{ chainId: chainConfig.chainId }],
-        });
-      } catch (switchError) {
-        if (switchError.code === 4902) {
-          toast.success('adding metamask chain')
-          try {
-            await window.ethereum.request({
-              method: "wallet_addEthereumChain",
-              params: [chainConfig],
-            });
-          } catch (err) {
-            return errorAlert("error adding chain:",err)
-          }
-          return errorAlert('error switching chain:',switchError)
-        }
-      }
+      
       try {
         toast.success('read Baby Contract');
         
